@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skyvane — Weather App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ================================================
+       HEADER — logo · nav · theme toggle
+       ================================================ -->
+  <header class="header">
+    <div class="header-inner">
+
+      <a class="logo" href="#">
+        <div class="logo-icon">🌤</div>
+        <span>Skyvane</span>
+      </a>
+
+      <nav class="nav" aria-label="Main navigation">
+        <a class="nav-link active"   href="#">Dashboard</a>
+        <a class="nav-link disabled" href="#" aria-disabled="true" tabindex="-1">Map</a>
+        <a class="nav-link disabled" href="#" aria-disabled="true" tabindex="-1">Education</a>
+        <a class="nav-link disabled" href="#" aria-disabled="true" tabindex="-1">Historical</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <!-- Sun = visible in dark mode -->
+          <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1"  x2="12" y2="3"/>  <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22"   x2="5.64"  y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1"  y1="12" x2="3"  y2="12"/> <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22"  y1="19.78" x2="5.64"  y2="18.36"/>
+            <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
+          </svg>
+          <!-- Moon = visible in light mode -->
+          <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================================================
+       APP WRAPPER — centers content to 700px max-width
+       ================================================ -->
+  <div class="app-wrapper">
+    <main class="main" id="main">
+
+      <!-- ---- SEARCH BAR ---- -->
+      <section class="search-section" aria-label="City search">
+        <div class="search-bar-wrap">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            class="search-input"
+            id="searchInput"
+            type="text"
+            placeholder="Search a city — e.g. Hyderabad,Banglore,Mumbai…"
+            autocomplete="off"
+            aria-label="City name"
+          />
+          <button class="search-btn" id="searchBtn">Search</button>
+        </div>
+
+        <!-- Error banner — hidden by default -->
+        <div class="error-banner" id="errorBanner" role="alert" aria-live="polite">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8"  x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span id="errorMsg">City not found. Please try a different name.</span>
+        </div>
+      </section>
+
+      <!-- ---- LOADING SPINNER ---- -->
+      <div class="loading-overlay" id="loadingOverlay" aria-live="polite" aria-label="Loading weather data">
+        <div class="spinner"></div>
+        <p class="loading-text">Fetching weather data…</p>
+      </div>
+
+      <!-- ---- EMPTY STATE (default view) ---- -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🌍</div>
+        <h2 class="empty-title">Where in the world?</h2>
+        <p class="empty-subtitle">Search any city to see live weather, a 5-day forecast, and hourly insights.</p>
+      </div>
+
+      <!-- ---- CURRENT WEATHER CARD (filled in M3) ---- -->
+      <div class="weather-card" id="weatherCard" aria-label="Current weather">
+        <div class="weather-card-top">
+          <div class="city-info">
+            <div class="city-name">
+              <span id="cityName">—</span>
+              <button class="city-clear-btn" id="clearCityBtn" title="Clear city" aria-label="Clear saved city">✕</button>
+            </div>
+            <div class="city-meta" id="cityMeta">—</div>
+          </div>
+          <div class="weather-condition-badge" id="conditionBadge">
+            <span id="conditionIcon">—</span>
+            <span id="conditionLabel">—</span>
+          </div>
+        </div>
+
+        <div class="temp-display" id="tempDisplay">
+          —<span class="unit">°C</span>
+        </div>
+
+        <div class="stat-badges">
+          <div class="stat-badge">
+            <span>💧</span>
+            <div>
+              <div class="label">Humidity</div>
+              <div id="humidityVal">—%</div>
+            </div>
+          </div>
+          <div class="stat-badge">
+            <span>💨</span>
+            <div>
+              <div class="label">Wind</div>
+              <div id="windVal">— km/h</div>
+            </div>
+          </div>
+          <div class="stat-badge">
+            <span>🔵</span>
+            <div>
+              <div class="label">Pressure</div>
+              <div id="pressureVal">— hPa</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- 5-DAY FORECAST STRIP (filled in M4) ---- -->
+      <section id="forecastSection">
+        <div class="section-label">5-Day Forecast</div>
+        <div class="forecast-strip" id="forecastStrip">
+          <!-- JS injects 5 cards here in M4 -->
+        </div>
+      </section>
+
+      <!-- ---- HOURLY INSIGHTS PANEL (filled in M4) ---- -->
+      <section id="insightsSection">
+        <div class="section-label">Hourly Insights — Today</div>
+        <div class="insights-panel" id="insightsPanel">
+          <!-- JS injects 6 rows here in M4 -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ================================================
+         FOOTER
+         ================================================ -->
+    <footer class="footer" aria-label="Site footer">
+      <div class="footer-links">
+        <a class="footer-link" href="#">Privacy Policy</a>
+        <span class="footer-sep">·</span>
+        <a class="footer-link" href="#">Terms of Service</a>
+        <span class="footer-sep">·</span>
+        <a class="footer-link" href="#">Scientific Data Sources</a>
+      </div>
+      <p class="footer-copy">Weather data from Open-Meteo · No API key required</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
