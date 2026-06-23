@@ -108,6 +108,7 @@
     DOM.weatherCard.style.display     = 'none';
     DOM.errorBanner.style.display     = 'none';
     DOM.searchBtn.disabled            = true;
+    DOM.searchInput.disabled          = true;
   }
   
   function showError(message) {
@@ -116,6 +117,7 @@
     DOM.errorBanner.style.display     = 'flex';
     DOM.errorMsg.textContent          = message;
     DOM.searchBtn.disabled            = false;
+    DOM.searchInput.disabled          = false;
   }
   
   function showWeather() {
@@ -126,6 +128,7 @@
     DOM.forecastSection.style.display = 'block';
     DOM.insightsSection.style.display = 'block';
     DOM.searchBtn.disabled            = false;
+    DOM.searchInput.disabled          = false;
   }
   
   

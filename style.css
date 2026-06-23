@@ -292,7 +292,7 @@ body {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   outline: none;
-  transition: all 0.2s ease;
+  transition: var(--transition-theme), box-shadow 0.2s ease, border-color 0.2s ease;
   box-shadow: var(--shadow-sm);
 }
 
@@ -301,6 +301,11 @@ body {
 .search-input:focus {
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+
+.search-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .search-btn {
@@ -377,6 +382,7 @@ body {
   border-radius: var(--radius-md);
   font-size: 14px;
   color: var(--color-danger);
+  transition: var(--transition-theme);
 }
 
 
@@ -390,6 +396,7 @@ body {
   border-radius: var(--radius-xl);
   padding: 28px;
   box-shadow: var(--shadow-card);
+  transition: var(--transition-theme);
 }
 
 .weather-card-top {
@@ -480,6 +487,12 @@ body {
   padding: 8px 14px;
   border-radius: var(--radius-md);
   font-weight: 500;
+  transition: var(--transition-theme), transform 0.15s ease, border-color 0.15s ease;
+}
+
+.stat-badge:hover {
+  border-color: var(--color-border-hover);
+  transform: translateY(-1px);
 }
 
 .stat-badge .label {
@@ -508,7 +521,7 @@ body {
   border-radius: var(--radius-lg);
   padding: 16px 10px;
   text-align: center;
-  transition: all 0.18s ease;
+  transition: var(--transition-theme), transform 0.18s ease, border-color 0.18s ease;
   box-shadow: var(--shadow-sm);
 }
 
@@ -553,6 +566,7 @@ body {
   border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow: var(--shadow-card);
+  transition: var(--transition-theme);
 }
 
 .insight-row {
@@ -561,7 +575,7 @@ body {
   padding: 13px 20px;
   border-bottom: 1px solid var(--color-border);
   gap: 16px;
-  transition: background 0.15s;
+  transition: var(--transition-theme), background 0.15s ease;
 }
 
 .insight-row:last-child { border-bottom: none; }
