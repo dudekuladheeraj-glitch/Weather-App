@@ -67,6 +67,7 @@
      Writes back on every toggle.
      ================================================ */
   const THEME_KEY = 'skyvane_theme';
+  const CITY_KEY  = 'skyvane_last_city';
   
   function applyTheme(theme) {
     AppState.theme = theme;
@@ -214,10 +215,14 @@
   
       // Render all sections that have data
       renderWeatherCard();          // M3
-      // renderForecastStrip();     // M4 — wired in next milestone
-      // renderInsightsPanel();     // M4 — wired in next milestone
+      renderForecastStrip();        // M4
+      renderInsightsPanel();        // M4
   
       showWeather();
+  
+      // M5 — remember this city so it auto-loads on next visit
+      localStorage.setItem(CITY_KEY, name);
+      DOM.searchInput.value = name;
   
     } catch (err) {
       console.error('[M2] fetchWeather error:', err.message);
@@ -330,17 +335,82 @@
   }
   
   // ------------------------------------------------
-  // 6e. RENDER FORECAST STRIP  (M4 — stub kept)
+  // 6e. RENDER FORECAST STRIP  (M4)
+  // Reads: AppState.weather.daily
+  // Builds: 5 day-cards (today + next 4), today highlighted
   // ------------------------------------------------
   function renderForecastStrip() {
-    // Implementation in M4
+    const { weather } = AppState;
+    const d = weather.daily;
+
+    DOM.forecastStrip.innerHTML = '';
+
+    const dayCount = Math.min(5, d.time.length);
+
+    for (let i = 0; i < dayCount; i++) {
+      const isToday  = i === 0;
+      const dayLabel = isToday
+        ? 'Today'
+        : new Date(d.time[i]).toLocaleDateString('en-GB', { weekday: 'short' });
+
+      const condition = getCondition(d.weather_code[i]);
+      const hi = Math.round(d.temperature_2m_max[i]);
+      const lo = Math.round(d.temperature_2m_min[i]);
+
+      const card = document.createElement('div');
+      card.className = `forecast-card${isToday ? ' today' : ''}`;
+      card.innerHTML = `
+        <div class="forecast-day">${dayLabel}</div>
+        <div class="forecast-icon">${condition.icon}</div>
+        <div class="forecast-hi">${hi}°</div>
+        <div class="forecast-lo">${lo}°</div>
+      `;
+
+      DOM.forecastStrip.appendChild(card);
+    }
   }
-  
+
   // ------------------------------------------------
-  // 6f. RENDER INSIGHTS PANEL  (M4 — stub kept)
+  // 6f. RENDER INSIGHTS PANEL  (M4)
+  // Reads: AppState.weather.hourly
+  // Builds: 6 rows starting from the current hour onward
   // ------------------------------------------------
   function renderInsightsPanel() {
-    // Implementation in M4
+    const { weather } = AppState;
+    const h = weather.hourly;
+
+    DOM.insightsPanel.innerHTML = '';
+
+    // Find the first hourly entry at or after right now (city-local time)
+    const now = new Date();
+    let startIdx = h.time.findIndex((t) => new Date(t) >= now);
+    if (startIdx === -1) startIdx = 0;
+
+    const rowCount = Math.min(6, h.time.length - startIdx);
+
+    for (let n = 0; n < rowCount; n++) {
+      const idx  = startIdx + n;
+      const time = new Date(h.time[idx]);
+      const timeLabel = time.toLocaleTimeString('en-GB', {
+        hour:   '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+
+      const condition = getCondition(h.weather_code[idx]);
+      const temp       = Math.round(h.temperature_2m[idx]);
+
+      const row = document.createElement('div');
+      row.className = 'insight-row';
+      row.innerHTML = `
+        <div class="insight-time">${timeLabel}</div>
+        <div class="insight-icon">${condition.icon}</div>
+        <div class="insight-condition">${condition.label}</div>
+        <div class="insight-temp">${temp}°</div>
+      `;
+
+      DOM.insightsPanel.appendChild(row);
+    }
   }
   
   
@@ -365,13 +435,13 @@
     }
   });
   
-  // Clear button — resets to empty state (M5 adds localStorage clear)
+  // Clear button — resets to empty state and forgets the stored city
   DOM.clearCityBtn.addEventListener('click', () => {
     AppState.city    = null;
     AppState.weather = null;
     DOM.searchInput.value = '';
     showEmpty();
-    // M5: localStorage.removeItem(CITY_KEY);
+    localStorage.removeItem(CITY_KEY);
   });
   
   
@@ -384,9 +454,14 @@
     const savedTheme = localStorage.getItem(THEME_KEY);
     applyTheme(savedTheme === 'light' ? 'light' : 'dark');
   
-    // M5 will add: auto-load last searched city from localStorage
-  
-    showEmpty();
+    // M5 — auto-load last searched city from localStorage, if any
+    const savedCity = localStorage.getItem(CITY_KEY);
+    if (savedCity) {
+      DOM.searchInput.value = savedCity;
+      fetchWeather(savedCity);
+    } else {
+      showEmpty();
+    }
   }
   
   init();
