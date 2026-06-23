@@ -212,11 +212,11 @@
       AppState.city    = { name, country, lat, lon };
       AppState.weather = weatherData;
   
-      console.log('[M2] City resolved:', AppState.city);
-      console.log('[M2] Weather data:', AppState.weather);
+      // Render all sections that have data
+      renderWeatherCard();          // M3
+      // renderForecastStrip();     // M4 — wired in next milestone
+      // renderInsightsPanel();     // M4 — wired in next milestone
   
-      // M3 will call renderWeatherCard() here
-      // M4 will call renderForecastStrip() and renderInsightsPanel() here
       showWeather();
   
     } catch (err) {
@@ -227,22 +227,118 @@
   
   
   /* ================================================
-     6. RENDER  (filled in M3 and M4)
-     Each render function takes data from AppState
-     and updates exactly its own DOM section.
+     6. RENDER
+     Each function reads from AppState and updates
+     exactly its own section of the DOM. No function
+     touches another section's elements.
      ================================================ */
   
-  // M3 — fills the current weather card
-  function renderWeatherCard() {
-    // Implementation in M3
+  // ------------------------------------------------
+  // 6a. WMO WEATHER CODE MAP
+  // Open-Meteo returns integer codes (WMO standard).
+  // This maps each code → { label, icon }
+  // Used by both the weather card (M3) and hourly
+  // insights panel (M4) — defined once, shared.
+  // Full code list: https://open-meteo.com/en/docs
+  // ------------------------------------------------
+  const WMO = {
+    0:  { label: 'Clear Sky',         icon: '☀️'  },
+    1:  { label: 'Mainly Clear',      icon: '🌤️' },
+    2:  { label: 'Partly Cloudy',     icon: '⛅'  },
+    3:  { label: 'Overcast',          icon: '☁️'  },
+    45: { label: 'Foggy',             icon: '🌫️' },
+    48: { label: 'Icy Fog',           icon: '🌫️' },
+    51: { label: 'Light Drizzle',     icon: '🌦️' },
+    53: { label: 'Drizzle',           icon: '🌦️' },
+    55: { label: 'Heavy Drizzle',     icon: '🌧️' },
+    61: { label: 'Light Rain',        icon: '🌧️' },
+    63: { label: 'Rain',              icon: '🌧️' },
+    65: { label: 'Heavy Rain',        icon: '🌧️' },
+    71: { label: 'Light Snow',        icon: '🌨️' },
+    73: { label: 'Snow',              icon: '❄️'  },
+    75: { label: 'Heavy Snow',        icon: '❄️'  },
+    77: { label: 'Snow Grains',       icon: '🌨️' },
+    80: { label: 'Light Showers',     icon: '🌦️' },
+    81: { label: 'Showers',           icon: '🌧️' },
+    82: { label: 'Heavy Showers',     icon: '⛈️'  },
+    85: { label: 'Snow Showers',      icon: '🌨️' },
+    86: { label: 'Heavy Snow Showers',icon: '❄️'  },
+    95: { label: 'Thunderstorm',      icon: '⛈️'  },
+    96: { label: 'Thunderstorm + Hail',icon:'⛈️'  },
+    99: { label: 'Severe Thunderstorm',icon:'⛈️'  },
+  };
+  
+  // Safe lookup — falls back gracefully for unknown codes
+  function getCondition(code) {
+    return WMO[code] ?? { label: 'Unknown', icon: '🌡️' };
   }
   
-  // M4 — fills the 5-day forecast strip
+  // ------------------------------------------------
+  // 6b. TEMPERATURE ACCENT COLOR
+  // Hot  (≥ 30°C) → warm orange
+  // Cold (≤  5°C) → cool blue
+  // Mild (between) → purple accent
+  // ------------------------------------------------
+  function getTempAccent(temp) {
+    if (temp >= 30) return { color: 'var(--color-warm)', bg: 'var(--color-warm-soft)' };
+    if (temp <=  5) return { color: 'var(--color-cool)', bg: 'var(--color-cool-soft)' };
+    return             { color: 'var(--color-mild)', bg: 'var(--color-mild-soft)' };
+  }
+  
+  // ------------------------------------------------
+  // 6c. DATE FORMATTER
+  // Returns a readable string like "Tuesday, 24 Jun 2025"
+  // ------------------------------------------------
+  function formatDate(isoString) {
+    const date = isoString ? new Date(isoString) : new Date();
+    return date.toLocaleDateString('en-GB', {
+      weekday: 'long',
+      day:     'numeric',
+      month:   'short',
+      year:    'numeric',
+    });
+  }
+  
+  // ------------------------------------------------
+  // 6d. RENDER WEATHER CARD  (M3)
+  // Reads: AppState.city, AppState.weather.current
+  // Writes: city name, date, temp, condition, stats
+  // ------------------------------------------------
+  function renderWeatherCard() {
+    const { city, weather } = AppState;
+    const c = weather.current;                      // shorthand for current data
+  
+    // City name + country
+    DOM.cityName.textContent = city.name;
+    DOM.cityMeta.textContent = `${city.country} · ${formatDate(c.time)}`;
+  
+    // Temperature
+    const temp   = Math.round(c.temperature_2m);
+    const accent = getTempAccent(temp);
+    DOM.tempDisplay.innerHTML = `${temp}<span class="unit">°C</span>`;
+    DOM.tempDisplay.style.color = accent.color;
+  
+    // Condition badge
+    const condition = getCondition(c.weather_code);
+    DOM.conditionIcon.textContent  = condition.icon;
+    DOM.conditionLabel.textContent = condition.label;
+  
+    // Stat badges
+    DOM.humidityVal.textContent = `${c.relative_humidity_2m}%`;
+    DOM.windVal.textContent     = `${Math.round(c.wind_speed_10m)} km/h`;
+    DOM.pressureVal.textContent = `${Math.round(c.surface_pressure)} hPa`;
+  }
+  
+  // ------------------------------------------------
+  // 6e. RENDER FORECAST STRIP  (M4 — stub kept)
+  // ------------------------------------------------
   function renderForecastStrip() {
     // Implementation in M4
   }
   
-  // M4 — fills the hourly insights panel
+  // ------------------------------------------------
+  // 6f. RENDER INSIGHTS PANEL  (M4 — stub kept)
+  // ------------------------------------------------
   function renderInsightsPanel() {
     // Implementation in M4
   }
